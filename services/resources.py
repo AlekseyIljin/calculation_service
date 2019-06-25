@@ -1,25 +1,31 @@
-from flask import jsonify
-from flask_restful import Resource
+from flask_restful import Resource, request
 from .models import Calculation
+from decimal import Decimal
+from .config import db
+
 
 
 class Calculate(Resource):
     def post(self):
-        # input correct url to get an info about contract
-        contract = self.get("contract_id")
-        project = contract.get("project_id")
-        rules = contract.get("rules")
-        data = self
+        calculation = Calculation()
+        data = self.get("api/calc")
+        contract = data.get("contract_id")
+        calculation.project_id = data.get("project_id")
+        rules = request.get("rules")
         cost = data.get("price").get("currency_value")
         result = 0
         for key in data:
             if key in rules:
-                result += (data.get(key) * rules.get(key) * cost)
+                result += (data.get(key) * (rules.get(key) * cost))
 
         currency = data.get('price').get('currency')
-        result = '{:.3f} '.format(result) + currency
-        request.put('/status', 'completed')
+        calculation.result = Decimal(result)
+        db.session.add(calculation)
+        db.session.commit()
+        self.put('/api/calc', contract, 'completed')
+
         return result
 
     def get(self):
-        return Calculation.result
+        calculation = model.project_id
+        return model.result

@@ -22,7 +22,7 @@ def calculate_by_rules(project_id):
         if name_field in data:
             operands.append(Decimal(data.get(name_field)))
 
-    calculate = Decimal(eval(str(operands[0]) + operator + str(operands[1])))
+    calculate = Decimal(eval(str(operands[0]) + operator + str(operands[1]) + "*" + str(rules.get('coefficient'))))
     db.session.add(calculation)
     db.session.commit()
     data_api.AccessToProjects.put(project_id, 'completed')
